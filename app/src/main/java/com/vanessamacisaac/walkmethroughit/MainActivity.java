@@ -46,7 +46,7 @@ public class MainActivity extends ActionBarActivity implements ConnectionCallbac
     /**
      * The desired interval for location updates. Inexact. Updates may be more or less frequent.
      */
-    public static final long UPDATE_INTERVAL_IN_MILLISECONDS = 2000;
+    public static final long UPDATE_INTERVAL_IN_MILLISECONDS = 3000;
 
     /**
      * The fastest rate for active location updates. Exact. Updates will never be more frequent
@@ -150,7 +150,9 @@ public class MainActivity extends ActionBarActivity implements ConnectionCallbac
     }
 
     public void testSend(View view){
-        String url = "https://maps.googleapis.com/maps/api/directions/json?origin=Toronto&destination=Montreal&key=AIzaSyDe83w8OsRRYlZ5JwmGzDFGfWSQIdD00GQ";
+        double mLat = mCurrentLocation.getLatitude();
+        double mLon = mCurrentLocation.getLongitude();
+        String url = "https://maps.googleapis.com/maps/api/directions/json?origin="+mLat+","+mLon+"&destination=43.009762,-81.274271&mode=walking&key=AIzaSyDe83w8OsRRYlZ5JwmGzDFGfWSQIdD00GQ";
         new RequestTask().execute(url);
     }
 
@@ -179,6 +181,7 @@ public class MainActivity extends ActionBarActivity implements ConnectionCallbac
         if (mGoogleApiClient.isConnected()) {
             mGoogleApiClient.disconnect();
         }
+        stopLocationUpdates();
     }
 
     /**
@@ -295,6 +298,18 @@ public class MainActivity extends ActionBarActivity implements ConnectionCallbac
      * Updates the latitude, the longitude, and the last location time in the UI.
      */
     private void updateUI() {
+
+        // check if we're at destination or step destination
+        double measureDist = measure(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude(), 43.009762,-81.274271);
+        if (measureDist <= 1){
+            Toast.makeText(getBaseContext(), "ARRIVED AT: " + measureDist, Toast.LENGTH_SHORT).show();
+        }
+        else{
+            Toast.makeText(getBaseContext(), "DISTANCE: " + measureDist, Toast.LENGTH_SHORT).show();
+        }
+
+
+
         if (mCurrentLocation != null) {
             //mLatitudeTextView.setText(String.valueOf(mCurrentLocation.getLatitude()));
             //mLongitudeTextView.setText(String.valueOf(mCurrentLocation.getLongitude()));
@@ -310,6 +325,23 @@ public class MainActivity extends ActionBarActivity implements ConnectionCallbac
             TextView mTime = (TextView) findViewById(R.id.tv_random);
             mTime.setText(mLastUpdateTime);
         }
+    }
+
+    private double measure(double lat1, double lon1, double lat2, double lon2){
+//        var R = 6378.137; // Radius of earth in KM
+        double radius = 6378.137;
+//        var dLat = (lat2 - lat1) * Math.PI / 180;
+        double dLat = (lat2 - lat1) * Math.PI / 180;
+//        var dLon = (lon2 - lon1) * Math.PI / 180;
+        double dLon = (lon2 - lon1) * Math.PI / 180;
+        double a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                        Math.sin(dLon/2) * Math.sin(dLon/2);
+
+//        var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+//        var d = R * c;
+//        return d * 1000; // meters
+        return radius * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)) * 1000;
     }
 
 
