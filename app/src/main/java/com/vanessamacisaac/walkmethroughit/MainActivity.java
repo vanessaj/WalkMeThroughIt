@@ -4,6 +4,7 @@ import android.location.Location;
 import android.os.AsyncTask;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.text.Html;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.Menu;
@@ -28,6 +29,8 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.w3c.dom.Text;
 
 import java.io.ByteArrayOutputStream;
@@ -462,7 +465,31 @@ public class MainActivity extends ActionBarActivity implements ConnectionCallbac
             //Do anything with response..
             TextView mTV = (TextView) findViewById(R.id.directions);
             mTV.setMovementMethod(new ScrollingMovementMethod());
-            mTV.setText(result);
+            //mTV.setText(result);
+
+
+           // Log.v(TAG, result);
+            try{
+                JSONObject json = new JSONObject(result);
+                JSONArray routes = json.getJSONArray("routes");
+                JSONObject route = routes.getJSONObject(0);
+                JSONArray legs = route.getJSONArray("legs");
+                JSONObject leg = legs.getJSONObject(0);
+                JSONArray steps = leg.getJSONArray("steps");
+                int numOfSteps = steps.length();
+
+                for (int i=0; i<numOfSteps; i++){
+                    JSONObject step = steps.getJSONObject(i);
+                    mTV.append(Html.fromHtml(step.getString("html_instructions")));
+                    mTV.append("\n");
+                    Log.v(TAG, step.getString("html_instructions"));
+                }
+
+
+            } catch (Exception e) {
+                Log.v(TAG, "Json failed");
+            }
+
         }
 
 
