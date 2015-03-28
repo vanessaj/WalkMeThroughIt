@@ -73,6 +73,7 @@ public class MainActivity extends ActionBarActivity implements ConnectionCallbac
      */
     protected Location mCurrentLocation;
 
+    protected Location mDestinationLocation;
     /**
      * Tracks the status of the location updates request. Value changes when the user presses the
      * Start Updates and Stop Updates buttons.
@@ -155,7 +156,12 @@ public class MainActivity extends ActionBarActivity implements ConnectionCallbac
     public void testSend(View view){
         double mLat = mCurrentLocation.getLatitude();
         double mLon = mCurrentLocation.getLongitude();
-        String url = "https://maps.googleapis.com/maps/api/directions/json?origin="+mLat+","+mLon+"&destination=43.009762,-81.274271&mode=walking&key=AIzaSyDe83w8OsRRYlZ5JwmGzDFGfWSQIdD00GQ";
+
+        double dLat = 43.009762;
+        double dLon = -81.274271;
+        mDestinationLocation.setLatitude(dLat);
+        mDestinationLocation.setLongitude(dLon);
+        String url = "https://maps.googleapis.com/maps/api/directions/json?origin="+mLat+","+mLon+"&destination="+dLat+","+dLon+"&mode=walking&key=AIzaSyDe83w8OsRRYlZ5JwmGzDFGfWSQIdD00GQ";
         new RequestTask().execute(url);
     }
 
@@ -303,7 +309,7 @@ public class MainActivity extends ActionBarActivity implements ConnectionCallbac
     private void updateUI() {
 
         // check if we're at destination or step destination
-        double measureDist = measure(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude(), 43.009762,-81.274271);
+        double measureDist = measure(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude(), mDestinationLocation.getLatitude(),mDestinationLocation.getLongitude());
         if (measureDist <= 1){
             Toast.makeText(getBaseContext(), "ARRIVED AT: " + measureDist, Toast.LENGTH_SHORT).show();
         }
