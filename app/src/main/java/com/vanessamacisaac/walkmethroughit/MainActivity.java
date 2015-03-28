@@ -1,13 +1,19 @@
 package com.vanessamacisaac.walkmethroughit;
 
+import android.location.Location;
 import android.os.AsyncTask;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
+
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationServices;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -22,14 +28,26 @@ import java.io.IOException;
 import java.net.URL;
 
 
-public class MainActivity extends ActionBarActivity {
+public class MainActivity extends ActionBarActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     private static final String TAG = "MainActivity";
+    protected GoogleApiClient mGoogleApiClient;
+    protected Location mLastLocation;
+
+    protected synchronized void buildGoogleApiClient() {
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(LocationServices.API)
+                .build();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        buildGoogleApiClient();
     }
 
 
@@ -58,6 +76,50 @@ public class MainActivity extends ActionBarActivity {
     public void testSend(View view){
         String url = "https://maps.googleapis.com/maps/api/directions/json?origin=Toronto&destination=Montreal&key=AIzaSyDe83w8OsRRYlZ5JwmGzDFGfWSQIdD00GQ";
         new RequestTask().execute(url);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        mGoogleApiClient.connect();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (mGoogleApiClient.isConnected()) {
+            mGoogleApiClient.disconnect();
+        }
+    }
+
+    @Override
+    public void onConnected(Bundle bundle) {
+        mLastLocation = LocationServices.FusedLocationApi.getLastLocation(
+                mGoogleApiClient);
+        if (mLastLocation != null) {
+
+            //mLatitudeText.setText(String.valueOf(mLastLocation.getLatitude()));
+            //mLongitudeText.setText(String.valueOf(mLastLocation.getLongitude()));
+            TextView mLat = (TextView) findViewById(R.id.tv_lat);
+            mLat.setText(String.valueOf(mLastLocation.getLatitude()));
+
+            TextView mLong = (TextView) findViewById(R.id.tv_long);
+            mLong.setText(String.valueOf(mLastLocation.getLongitude()));
+        }
+        else{
+            Log.e(TAG, "*** No last location ***");
+        }
+    }
+
+
+    @Override
+    public void onConnectionSuspended(int i) {
+
+    }
+
+    @Override
+    public void onConnectionFailed(ConnectionResult connectionResult) {
+
     }
 
     class RequestTask extends AsyncTask<String, String, String> {
@@ -93,7 +155,10 @@ public class MainActivity extends ActionBarActivity {
             super.onPostExecute(result);
             //Do anything with response..
             TextView mTV = (TextView) findViewById(R.id.directions);
+            mTV.setMovementMethod(new ScrollingMovementMethod());
             mTV.setText(result);
         }
+
+
     }
 }
