@@ -98,7 +98,9 @@ public class MainActivity extends ActionBarActivity implements ConnectionCallbac
         createLocationRequest();
     }
 
-
+    /* The steps for the trip from Google API */
+    protected JSONArray trip_steps;
+    protected int current_step_num = 0;
 
     /**
      * Removes location updates from the FusedLocationApi.
@@ -164,6 +166,19 @@ public class MainActivity extends ActionBarActivity implements ConnectionCallbac
         String url = "https://maps.googleapis.com/maps/api/directions/json?origin="+mLat+","+mLon+"&destination="+dLat+","+dLon+"&mode=walking&key=AIzaSyDe83w8OsRRYlZ5JwmGzDFGfWSQIdD00GQ";
         new RequestTask().execute(url);
     }
+
+    public void sendGoogleRequest(){
+        double mLat = mCurrentLocation.getLatitude();
+        double mLon = mCurrentLocation.getLongitude();
+
+        double dLat = 43.009762;
+        double dLon = -81.274271;
+        mDestinationLocation.setLatitude(dLat);
+        mDestinationLocation.setLongitude(dLon);
+        String url = "https://maps.googleapis.com/maps/api/directions/json?origin="+mLat+","+mLon+"&destination="+dLat+","+dLon+"&mode=walking&key=AIzaSyDe83w8OsRRYlZ5JwmGzDFGfWSQIdD00GQ";
+        new RequestTask().execute(url);
+    }
+
 
     @Override
     protected void onStart() {
@@ -263,7 +278,9 @@ public class MainActivity extends ActionBarActivity implements ConnectionCallbac
             mRequestingLocationUpdates = true;
             setButtonsEnabledState();
             startLocationUpdates();
+            sendGoogleRequest();
         }
+
     }
 
     /**
@@ -309,13 +326,41 @@ public class MainActivity extends ActionBarActivity implements ConnectionCallbac
     private void updateUI() {
 
         // check if we're at destination or step destination
-        double measureDist = measure(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude(), mDestinationLocation.getLatitude(),mDestinationLocation.getLongitude());
-        if (measureDist <= 1){
-            Toast.makeText(getBaseContext(), "ARRIVED AT: " + measureDist, Toast.LENGTH_SHORT).show();
+//        double measureDist = measure(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude(), mDestinationLocation.getLatitude(),mDestinationLocation.getLongitude());
+//        if (measureDist <= 5){
+//            Toast.makeText(getBaseContext(), "ARRIVED AT: " + measureDist, Toast.LENGTH_SHORT).show();
+//        }
+//        else{
+//            Toast.makeText(getBaseContext(), "DISTANCE: " + measureDist, Toast.LENGTH_SHORT).show();
+//        }
+
+        try {
+            JSONObject current_step  = trip_steps.getJSONObject(current_step_num);
+            JSONObject ending_location = current_step.getJSONObject("end_location");
+            double dist = measure(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude(), ending_location.getDouble("lat"), ending_location.getDouble("lng"));
+
+            if (current_step_num == 0){
+                current_step  = trip_steps.getJSONObject(current_step_num);
+                TextView mTV = (TextView) findViewById(R.id.directions);
+                mTV.setMovementMethod(new ScrollingMovementMethod());
+                mTV.setText(Html.fromHtml(current_step.getString("html_instructions")));
+            }
+
+            if (dist <= 5) {
+                current_step_num+=1;
+                current_step  = trip_steps.getJSONObject(current_step_num);
+                TextView mTV = (TextView) findViewById(R.id.directions);
+                mTV.setMovementMethod(new ScrollingMovementMethod());
+                mTV.setText(Html.fromHtml(current_step.getString("html_instructions")));
+                // Todo: Buzz
+            }
         }
-        else{
-            Toast.makeText(getBaseContext(), "DISTANCE: " + measureDist, Toast.LENGTH_SHORT).show();
+        catch (Exception e) {
+            Log.v(TAG, "Couldn't get the current step");
         }
+
+
+
 
 
 
@@ -482,6 +527,7 @@ public class MainActivity extends ActionBarActivity implements ConnectionCallbac
                 JSONArray legs = route.getJSONArray("legs");
                 JSONObject leg = legs.getJSONObject(0);
                 JSONArray steps = leg.getJSONArray("steps");
+                trip_steps = steps;
                 int numOfSteps = steps.length();
 
                 for (int i=0; i<numOfSteps; i++){
