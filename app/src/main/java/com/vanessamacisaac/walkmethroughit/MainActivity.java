@@ -318,15 +318,11 @@ public class MainActivity extends ActionBarActivity implements ConnectionCallbac
 
 
         if (mCurrentLocation != null) {
-            //mLatitudeTextView.setText(String.valueOf(mCurrentLocation.getLatitude()));
-            //mLongitudeTextView.setText(String.valueOf(mCurrentLocation.getLongitude()));
-            //mLastUpdateTimeTextView.setText(mLastUpdateTime);
+            // set textview for current latitude
             TextView mLat = (TextView) findViewById(R.id.tv_lat);
-            //mLat.setText(String.valueOf(mLastLocation.getLatitude()));
             mLat.setText(String.valueOf(mCurrentLocation.getLatitude()));
-
+            // set textview for current longitude
             TextView mLong = (TextView) findViewById(R.id.tv_long);
-            //mLong.setText(String.valueOf(mLastLocation.getLongitude()));
             mLong.setText(String.valueOf(mCurrentLocation.getLongitude()));
 
             TextView mTime = (TextView) findViewById(R.id.tv_random);
@@ -334,6 +330,7 @@ public class MainActivity extends ActionBarActivity implements ConnectionCallbac
             TextView mTV = (TextView) findViewById(R.id.directions);
             if (request_returned){
                 try {
+                    // get JSON object from JSON array
                     JSONObject step = trip_steps.getJSONObject(step_num);
                     JSONObject end = step.getJSONObject("end_location");
 
@@ -341,6 +338,8 @@ public class MainActivity extends ActionBarActivity implements ConnectionCallbac
 
                     if (dist<= 5){
                         step_num+=1;
+
+                        // if we are at the last step, stop the updates and notify user
                         if (step_num==trip_steps.length()){
                             stopLocationUpdates();
                             mTV.setText("You have arrived!");
@@ -348,7 +347,7 @@ public class MainActivity extends ActionBarActivity implements ConnectionCallbac
                         }
                         step = trip_steps.getJSONObject(step_num);
                     }
-
+                    // updated TextView with instructions
                     mTV.setMovementMethod(new ScrollingMovementMethod());
                     mTV.setText(Html.fromHtml(step.getString("html_instructions")));
                 } catch (Exception e) {
@@ -360,19 +359,14 @@ public class MainActivity extends ActionBarActivity implements ConnectionCallbac
     }
 
     private double measure(double lat1, double lon1, double lat2, double lon2){
-//        var R = 6378.137; // Radius of earth in KM
-        double radius = 6378.137;
-//        var dLat = (lat2 - lat1) * Math.PI / 180;
+
+        // calculate distance between coordinates1 and coordinates 2 using spherical geometry
+        double radius = 6378.137; // Radius of earth in KM
         double dLat = (lat2 - lat1) * Math.PI / 180;
-//        var dLon = (lon2 - lon1) * Math.PI / 180;
         double dLon = (lon2 - lon1) * Math.PI / 180;
         double a = Math.sin(dLat/2) * Math.sin(dLat/2) +
                 Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
                         Math.sin(dLon/2) * Math.sin(dLon/2);
-
-//        var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-//        var d = R * c;
-//        return d * 1000; // meters
         return radius * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)) * 1000;
     }
 
@@ -382,23 +376,6 @@ public class MainActivity extends ActionBarActivity implements ConnectionCallbac
     public void onConnected(Bundle bundle) {
         Log.i(TAG, "Connected to GoogleApiClient");
         mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
-        if (mLastLocation != null) {
-
-            //mLatitudeText.setText(String.valueOf(mLastLocation.getLatitude()));
-            //mLongitudeText.setText(String.valueOf(mLastLocation.getLongitude()));
-            /*TextView mLat = (TextView) findViewById(R.id.tv_lat);
-            mLat.setText(String.valueOf(mLastLocation.getLatitude()));
-
-            TextView mLong = (TextView) findViewById(R.id.tv_long);
-            mLong.setText(String.valueOf(mLastLocation.getLongitude()));
-
-            TextView mRandom = (TextView) findViewById(R.id.tv_random);
-            mRandom.setText(String.valueOf(mLastLocation.getBearing()));*/
-
-        }
-        else{
-            Log.e(TAG, "*** No last location ***");
-        }
         if (mCurrentLocation == null) {
             mCurrentLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
             mLastUpdateTime = DateFormat.getTimeInstance().format(new Date());
@@ -447,9 +424,6 @@ public class MainActivity extends ActionBarActivity implements ConnectionCallbac
         Log.v(TAG, "Location updated");
     }
 
-
-
-
     /**
      * Stores activity data in the Bundle.
      */
@@ -460,6 +434,7 @@ public class MainActivity extends ActionBarActivity implements ConnectionCallbac
         super.onSaveInstanceState(savedInstanceState);
     }
 
+    // Request directions using http request
     class RequestTask extends AsyncTask<String, String, String> {
 
         @Override
@@ -494,11 +469,9 @@ public class MainActivity extends ActionBarActivity implements ConnectionCallbac
             //Do anything with response..
             TextView mTV = (TextView) findViewById(R.id.directions);
             mTV.setMovementMethod(new ScrollingMovementMethod());
-            //mTV.setText(result);
-
-
             // Log.v(TAG, result);
             try{
+                // get JSON object returned from request to google directions
                 JSONObject json = new JSONObject(result);
                 JSONArray routes = json.getJSONArray("routes");
                 JSONObject route = routes.getJSONObject(0);
@@ -506,16 +479,6 @@ public class MainActivity extends ActionBarActivity implements ConnectionCallbac
                 JSONObject leg = legs.getJSONObject(0);
                 JSONArray steps = leg.getJSONArray("steps");
                 trip_steps = steps;
-//                int numOfSteps = steps.length();
-
-//                for (int i=0; i<numOfSteps; i++){
-//                    JSONObject step = steps.getJSONObject(i);
-//                    mTV.append(Html.fromHtml(step.getString("html_instructions")));
-//                    mTV.append("\n");
-//                    mTV.append(Double.toString(step.getJSONObject("end_location").getDouble("lat")));
-//                    mTV.append("\n");
-//                    Log.v(TAG, step.getString("html_instructions"));
-//                }
 
                 request_returned = true;
             } catch (Exception e) {
