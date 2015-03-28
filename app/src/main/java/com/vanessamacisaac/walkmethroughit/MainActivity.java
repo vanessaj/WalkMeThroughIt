@@ -73,7 +73,6 @@ public class MainActivity extends ActionBarActivity implements ConnectionCallbac
      */
     protected Location mCurrentLocation;
 
-    protected Location mDestinationLocation;
     /**
      * Tracks the status of the location updates request. Value changes when the user presses the
      * Start Updates and Stop Updates buttons.
@@ -84,6 +83,11 @@ public class MainActivity extends ActionBarActivity implements ConnectionCallbac
      * Time when the location was updated represented as a String.
      */
     protected String mLastUpdateTime;
+
+
+    protected JSONArray trip_steps;
+    protected int step_num = 0;
+    protected Boolean request_returned = false;
 
     // UI Widgets.
     protected Button mStartUpdatesButton;
@@ -98,9 +102,7 @@ public class MainActivity extends ActionBarActivity implements ConnectionCallbac
         createLocationRequest();
     }
 
-    /* The steps for the trip from Google API */
-    protected JSONArray trip_steps;
-    protected int current_step_num = 0;
+
 
     /**
      * Removes location updates from the FusedLocationApi.
@@ -158,27 +160,9 @@ public class MainActivity extends ActionBarActivity implements ConnectionCallbac
     public void testSend(View view){
         double mLat = mCurrentLocation.getLatitude();
         double mLon = mCurrentLocation.getLongitude();
-
-        double dLat = 43.009762;
-        double dLon = -81.274271;
-        mDestinationLocation.setLatitude(dLat);
-        mDestinationLocation.setLongitude(dLon);
-        String url = "https://maps.googleapis.com/maps/api/directions/json?origin="+mLat+","+mLon+"&destination="+dLat+","+dLon+"&mode=walking&key=AIzaSyDe83w8OsRRYlZ5JwmGzDFGfWSQIdD00GQ";
+        String url = "https://maps.googleapis.com/maps/api/directions/json?origin="+mLat+","+mLon+"&destination=43.009762,-81.274271&mode=walking&key=AIzaSyDe83w8OsRRYlZ5JwmGzDFGfWSQIdD00GQ";
         new RequestTask().execute(url);
     }
-
-    public void sendGoogleRequest(){
-        double mLat = mCurrentLocation.getLatitude();
-        double mLon = mCurrentLocation.getLongitude();
-
-        double dLat = 43.009762;
-        double dLon = -81.274271;
-        mDestinationLocation.setLatitude(dLat);
-        mDestinationLocation.setLongitude(dLon);
-        String url = "https://maps.googleapis.com/maps/api/directions/json?origin="+mLat+","+mLon+"&destination="+dLat+","+dLon+"&mode=walking&key=AIzaSyDe83w8OsRRYlZ5JwmGzDFGfWSQIdD00GQ";
-        new RequestTask().execute(url);
-    }
-
 
     @Override
     protected void onStart() {
@@ -278,9 +262,7 @@ public class MainActivity extends ActionBarActivity implements ConnectionCallbac
             mRequestingLocationUpdates = true;
             setButtonsEnabledState();
             startLocationUpdates();
-            sendGoogleRequest();
         }
-
     }
 
     /**
@@ -326,42 +308,13 @@ public class MainActivity extends ActionBarActivity implements ConnectionCallbac
     private void updateUI() {
 
         // check if we're at destination or step destination
-//        double measureDist = measure(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude(), mDestinationLocation.getLatitude(),mDestinationLocation.getLongitude());
-//        if (measureDist <= 5){
-//            Toast.makeText(getBaseContext(), "ARRIVED AT: " + measureDist, Toast.LENGTH_SHORT).show();
-//        }
-//        else{
-//            Toast.makeText(getBaseContext(), "DISTANCE: " + measureDist, Toast.LENGTH_SHORT).show();
-//        }
-
-        try {
-            JSONObject current_step  = trip_steps.getJSONObject(current_step_num);
-            JSONObject ending_location = current_step.getJSONObject("end_location");
-            double dist = measure(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude(), ending_location.getDouble("lat"), ending_location.getDouble("lng"));
-
-            if (current_step_num == 0){
-                current_step  = trip_steps.getJSONObject(current_step_num);
-                TextView mTV = (TextView) findViewById(R.id.directions);
-                mTV.setMovementMethod(new ScrollingMovementMethod());
-                mTV.setText(Html.fromHtml(current_step.getString("html_instructions")));
-            }
-
-            if (dist <= 5) {
-                current_step_num+=1;
-                current_step  = trip_steps.getJSONObject(current_step_num);
-                TextView mTV = (TextView) findViewById(R.id.directions);
-                mTV.setMovementMethod(new ScrollingMovementMethod());
-                mTV.setText(Html.fromHtml(current_step.getString("html_instructions")));
-                // Todo: Buzz
-            }
+        double measureDist = measure(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude(), 43.009762,-81.274271);
+        if (measureDist <= 1){
+            Toast.makeText(getBaseContext(), "ARRIVED AT: " + measureDist, Toast.LENGTH_SHORT).show();
         }
-        catch (Exception e) {
-            Log.v(TAG, "Couldn't get the current step");
+        else{
+            Toast.makeText(getBaseContext(), "DISTANCE: " + measureDist, Toast.LENGTH_SHORT).show();
         }
-
-
-
-
 
 
         if (mCurrentLocation != null) {
@@ -378,6 +331,31 @@ public class MainActivity extends ActionBarActivity implements ConnectionCallbac
 
             TextView mTime = (TextView) findViewById(R.id.tv_random);
             mTime.setText(mLastUpdateTime);
+            TextView mTV = (TextView) findViewById(R.id.directions);
+            if (request_returned){
+                try {
+                    JSONObject step = trip_steps.getJSONObject(step_num);
+                    JSONObject end = step.getJSONObject("end_location");
+
+                    double dist = measure(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude(), end.getDouble("lat"),end.getDouble("lng"));
+
+                    if (dist<= 5){
+                        step_num+=1;
+                        if (step_num==trip_steps.length()){
+                            stopLocationUpdates();
+                            mTV.setText("You have arrived!");
+                            return;
+                        }
+                        step = trip_steps.getJSONObject(step_num);
+                    }
+
+                    mTV.setMovementMethod(new ScrollingMovementMethod());
+                    mTV.setText(Html.fromHtml(step.getString("html_instructions")));
+                } catch (Exception e) {
+                    Log.v(TAG, "Didn't work");
+                }
+            }
+
         }
     }
 
@@ -519,7 +497,7 @@ public class MainActivity extends ActionBarActivity implements ConnectionCallbac
             //mTV.setText(result);
 
 
-           // Log.v(TAG, result);
+            // Log.v(TAG, result);
             try{
                 JSONObject json = new JSONObject(result);
                 JSONArray routes = json.getJSONArray("routes");
@@ -528,16 +506,18 @@ public class MainActivity extends ActionBarActivity implements ConnectionCallbac
                 JSONObject leg = legs.getJSONObject(0);
                 JSONArray steps = leg.getJSONArray("steps");
                 trip_steps = steps;
-                int numOfSteps = steps.length();
+//                int numOfSteps = steps.length();
 
-                for (int i=0; i<numOfSteps; i++){
-                    JSONObject step = steps.getJSONObject(i);
-                    mTV.append(Html.fromHtml(step.getString("html_instructions")));
-                    mTV.append("\n");
-                    Log.v(TAG, step.getString("html_instructions"));
-                }
+//                for (int i=0; i<numOfSteps; i++){
+//                    JSONObject step = steps.getJSONObject(i);
+//                    mTV.append(Html.fromHtml(step.getString("html_instructions")));
+//                    mTV.append("\n");
+//                    mTV.append(Double.toString(step.getJSONObject("end_location").getDouble("lat")));
+//                    mTV.append("\n");
+//                    Log.v(TAG, step.getString("html_instructions"));
+//                }
 
-
+                request_returned = true;
             } catch (Exception e) {
                 Log.v(TAG, "Json failed");
             }
