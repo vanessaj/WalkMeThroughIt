@@ -13,6 +13,20 @@
         android:text="TEST BUTTON !!!"
         android:onClick="testSend"/>
 
+    <Button
+        android:id="@+id/start"
+        android:text="START"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="startUpdatesButtonHandler"/>
+
+    <Button
+        android:id="@+id/stop"
+        android:text="STOP"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="stopUpdatesButtonHandler"/>
+
     <TextView
         android:id="@+id/tv_lat"
         android:layout_width="match_parent"
@@ -20,6 +34,11 @@
 
     <TextView
         android:id="@+id/tv_long"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <TextView
+        android:id="@+id/tv_random"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
