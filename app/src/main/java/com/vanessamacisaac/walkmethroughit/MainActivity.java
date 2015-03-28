@@ -1,7 +1,6 @@
 package com.vanessamacisaac.walkmethroughit;
 
 import android.location.Location;
-import android.location.LocationListener;
 import android.os.AsyncTask;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
@@ -16,6 +15,9 @@ import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks;
+import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
+import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 
@@ -35,7 +37,7 @@ import java.text.DateFormat;
 import java.util.Date;
 
 
-public class MainActivity extends ActionBarActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, com.google.android.gms.location.LocationListener {
+public class MainActivity extends ActionBarActivity implements ConnectionCallbacks, OnConnectionFailedListener, LocationListener {
 
     private static final String TAG = "MainActivity";
     protected GoogleApiClient mGoogleApiClient;
@@ -44,7 +46,7 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
     /**
      * The desired interval for location updates. Inexact. Updates may be more or less frequent.
      */
-    public static final long UPDATE_INTERVAL_IN_MILLISECONDS = 10000;
+    public static final long UPDATE_INTERVAL_IN_MILLISECONDS = 2000;
 
     /**
      * The fastest rate for active location updates. Exact. Updates will never be more frequent
@@ -89,17 +91,10 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
                 .addOnConnectionFailedListener(this)
                 .addApi(LocationServices.API)
                 .build();
+        createLocationRequest();
     }
 
-    /**
-     * Requests location updates from the FusedLocationApi.
-     */
-    protected void startLocationUpdates() {
-        // The final argument to {@code requestLocationUpdates()} is a LocationListener
-        // (http://developer.android.com/reference/com/google/android/gms/location/LocationListener.html).
-        //LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
-        LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
-    }
+
 
     /**
      * Removes location updates from the FusedLocationApi.
@@ -305,13 +300,15 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
             //mLongitudeTextView.setText(String.valueOf(mCurrentLocation.getLongitude()));
             //mLastUpdateTimeTextView.setText(mLastUpdateTime);
             TextView mLat = (TextView) findViewById(R.id.tv_lat);
-            mLat.setText(String.valueOf(mLastLocation.getLatitude()));
+            //mLat.setText(String.valueOf(mLastLocation.getLatitude()));
+            mLat.setText(String.valueOf(mCurrentLocation.getLatitude()));
 
             TextView mLong = (TextView) findViewById(R.id.tv_long);
-            mLong.setText(String.valueOf(mLastLocation.getLongitude()));
+            //mLong.setText(String.valueOf(mLastLocation.getLongitude()));
+            mLong.setText(String.valueOf(mCurrentLocation.getLongitude()));
 
-            TextView mRandom = (TextView) findViewById(R.id.tv_random);
-            mRandom.setText(mLastUpdateTime);
+            TextView mTime = (TextView) findViewById(R.id.tv_random);
+            mTime.setText(mLastUpdateTime);
         }
     }
 
@@ -320,8 +317,7 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
     @Override
     public void onConnected(Bundle bundle) {
         Log.i(TAG, "Connected to GoogleApiClient");
-        mLastLocation = LocationServices.FusedLocationApi.getLastLocation(
-                mGoogleApiClient);
+        mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
         if (mLastLocation != null) {
 
             //mLatitudeText.setText(String.valueOf(mLastLocation.getLatitude()));
@@ -353,6 +349,16 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
         }
     }
 
+    /**
+     * Requests location updates from the FusedLocationApi.
+     */
+    protected void startLocationUpdates() {
+        // The final argument to {@code requestLocationUpdates()} is a LocationListener
+        // (http://developer.android.com/reference/com/google/android/gms/location/LocationListener.html).
+        //LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
+        Log.e(TAG, "*** START LOCATION UPDATES");
+        LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
+    }
 
     @Override
     public void onConnectionSuspended(int i) {
@@ -376,6 +382,7 @@ public class MainActivity extends ActionBarActivity implements GoogleApiClient.C
         updateUI();
         Log.v(TAG, "Location updated");
     }
+
 
 
 
