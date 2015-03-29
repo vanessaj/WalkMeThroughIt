@@ -4,5 +4,7 @@
     <string name="app_name">WalkMeThroughIt</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+    <color name="background">#68C3A3</color>
+    <color name="button">#C8F7C5</color>
 
 </resources>

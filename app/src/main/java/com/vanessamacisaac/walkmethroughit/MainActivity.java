@@ -6,14 +6,17 @@ import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
 import android.location.Location;
 import android.os.AsyncTask;
+import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.text.Html;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -25,6 +28,8 @@ import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListe
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -42,14 +47,21 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URL;
 import java.text.DateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.UUID;
 
+import ai.wit.sdk.IWitListener;
+import ai.wit.sdk.Wit;
+import ai.wit.sdk.model.WitOutcome;
 
-public class MainActivity extends ActionBarActivity implements ConnectionCallbacks, OnConnectionFailedListener, LocationListener {
+
+public class MainActivity extends ActionBarActivity implements ConnectionCallbacks, OnConnectionFailedListener, LocationListener,IWitListener {
 
     private static final String TAG = "MainActivity";
 
+    // WIT var
+    Wit _wit;
     private static final int REQUEST_ENABLE_BT = 1;
     private BluetoothAdapter btAdapter = null;
     private BluetoothSocket btSocket = null;
@@ -157,6 +169,10 @@ public class MainActivity extends ActionBarActivity implements ConnectionCallbac
 
         btAdapter = BluetoothAdapter.getDefaultAdapter();
         checkBTState();
+
+        String accessToken = "RH52DWNZ5XBEDAFDCFZB4QP37RRZITU7";
+        _wit = new Wit(accessToken, this);
+        _wit.enableContextLocation(getApplicationContext());
     }
 
 
@@ -410,13 +426,13 @@ public class MainActivity extends ActionBarActivity implements ConnectionCallbac
         if (mCurrentLocation != null) {
             // set textview for current latitude
             TextView mLat = (TextView) findViewById(R.id.tv_lat);
-            mLat.setText(String.valueOf(mCurrentLocation.getLatitude()));
+            mLat.setText("Lat: "+ String.valueOf(mCurrentLocation.getLatitude()));
             // set textview for current longitude
             TextView mLong = (TextView) findViewById(R.id.tv_long);
-            mLong.setText(String.valueOf(mCurrentLocation.getLongitude()));
+            mLong.setText("Lng: "+String.valueOf(mCurrentLocation.getLongitude()));
 
-            TextView mTime = (TextView) findViewById(R.id.tv_random);
-            mTime.setText(mLastUpdateTime);
+            TextView mTime = (TextView) findViewById(R.id.tv_time);
+            mTime.setText("Last Update Time: "+mLastUpdateTime);
             TextView mTV = (TextView) findViewById(R.id.directions);
             if (request_returned){
                 try {
@@ -522,6 +538,58 @@ public class MainActivity extends ActionBarActivity implements ConnectionCallbac
         savedInstanceState.putParcelable(LOCATION_KEY, mCurrentLocation);
         savedInstanceState.putString(LAST_UPDATED_TIME_STRING_KEY, mLastUpdateTime);
         super.onSaveInstanceState(savedInstanceState);
+    }
+
+    public void toggle(View v) {
+        try {
+            _wit.toggleListening();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void witDidGraspIntent(ArrayList<WitOutcome> witOutcomes, String messageId, Error error) {
+        TextView jsonView = (TextView) findViewById(R.id.jsonView);
+        jsonView.setMovementMethod(new ScrollingMovementMethod());
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+
+        if (error != null) {
+            jsonView.setText(error.getLocalizedMessage());
+            return ;
+        }
+        String jsonOutput = gson.toJson(witOutcomes);
+        jsonView.setText(jsonOutput);
+        ((TextView) findViewById(R.id.txtText)).setText("Done!");
+    }
+
+    @Override
+    public void witDidStartListening() {
+        ((TextView) findViewById(R.id.txtText)).setText("Witting...");
+    }
+
+    @Override
+    public void witDidStopListening() {
+        ((TextView) findViewById(R.id.txtText)).setText("Processing...");
+    }
+
+    @Override
+    public void witActivityDetectorStarted() {
+        ((TextView) findViewById(R.id.txtText)).setText("Listening");
+    }
+
+    @Override
+    public String witGenerateMessageId() {
+        return null;
+    }
+
+    public static class PlaceholderFragment extends Fragment {
+        @Override
+        public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                                 Bundle savedInstanceState) {
+            // Inflate the layout for this fragment
+            return inflater.inflate(R.layout.wit_button, container, false);
+        }
     }
 
     // Request directions using http request

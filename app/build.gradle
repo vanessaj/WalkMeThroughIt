@@ -24,6 +24,8 @@ dependencies {
     compile 'com.android.support:appcompat-v7:21.0.3'
 
     compile 'com.google.android.gms:play-services:7.0.0'
+    compile 'com.google.code.gson:gson:2.2.4'
+    compile 'org.apache.directory.studio:org.apache.commons.io:2.4'
 
     compile 'org.json:json:20141113'
 }
