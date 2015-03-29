@@ -119,6 +119,10 @@ public class MainActivity extends ActionBarActivity implements ConnectionCallbac
     protected int step_num = 0;
     protected Boolean request_returned = false;
 
+    /* Location vars */
+    protected double dest_lat;
+    protected double dest_lng;
+
     // UI Widgets.
     protected Button mStartUpdatesButton;
     protected Button mStopUpdatesButton;
@@ -566,8 +570,22 @@ public class MainActivity extends ActionBarActivity implements ConnectionCallbac
             return ;
         }
         String jsonOutput = gson.toJson(witOutcomes);
-        jsonView.setText(jsonOutput);
-        ((TextView) findViewById(R.id.txtText)).setText("Done!");
+        //jsonView.setText(jsonOutput);
+
+        String destination = "";
+        try {
+            JSONArray wit_output = new JSONArray(jsonOutput);
+            JSONObject whole = wit_output.getJSONObject(0);
+            JSONObject entities = whole.getJSONObject("entities");
+            JSONArray location = entities.getJSONArray("location");
+            destination = location.getJSONObject(0).getString("value");
+        } catch (Exception e){}
+        double mLat = mCurrentLocation.getLatitude();
+        double mLon = mCurrentLocation.getLongitude();
+        String url = "https://maps.googleapis.com/maps/api/directions/json?origin="+mLat+","+mLon+"&destination="+destination.replace(" ", "+")+"&mode=walking&key=AIzaSyDe83w8OsRRYlZ5JwmGzDFGfWSQIdD00GQ";
+        new RequestTask().execute(url);
+
+        ((TextView) findViewById(R.id.txtText)).setText(destination);
     }
 
     @Override
@@ -708,7 +726,7 @@ public class MainActivity extends ActionBarActivity implements ConnectionCallbac
         if(!btSocket.isConnected()) {
             try {
                 btSocket.connect();
-                Thread.sleep(1000);
+                Thread.sleep(3000);
                 Log.e(TAG, "...Connection established and data link opened...");
             } catch (IOException e) {
                 try {
