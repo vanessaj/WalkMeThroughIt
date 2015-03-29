@@ -27,6 +27,20 @@
         android:layout_height="wrap_content"
         android:onClick="stopUpdatesButtonHandler"/>
 
+    <Button
+        android:text="Send"
+        android:id="@+id/sendRight"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="rightBT"/>
+
+    <Button
+        android:text="Send"
+        android:id="@+id/sendLeft"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="leftBT"/>
+
     <TextView
         android:id="@+id/tv_lat"
         android:layout_width="match_parent"
