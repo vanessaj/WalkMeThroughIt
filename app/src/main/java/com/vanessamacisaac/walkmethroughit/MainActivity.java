@@ -648,20 +648,18 @@ public class MainActivity extends ActionBarActivity implements ConnectionCallbac
 
     }
 
-    public void rightBT(View view){
+    public void rightBT(){
         checkBTState();
         sendData("1");
-        Toast msg = Toast.makeText(getBaseContext(),
-                "You have clicked On", Toast.LENGTH_SHORT);
-        msg.show();
+        //Toast msg = Toast.makeText(getBaseContext(),"You have clicked On", Toast.LENGTH_SHORT);
+        //msg.show();
     }
 
-    public void leftBT(View view){
+    public void leftBT(){
         checkBTState();
         sendData("2");
-        Toast msg = Toast.makeText(getBaseContext(),
-                "You have clicked On", Toast.LENGTH_SHORT);
-        msg.show();
+        //Toast msg = Toast.makeText(getBaseContext(),"You have clicked On", Toast.LENGTH_SHORT);
+        //msg.show();
     }
 
     private void checkBTState() {
