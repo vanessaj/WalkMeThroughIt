@@ -418,9 +418,6 @@ public class MainActivity extends ActionBarActivity implements ConnectionCallbac
         if (measureDist <= 1){
             Toast.makeText(getBaseContext(), "ARRIVED AT: " + measureDist, Toast.LENGTH_SHORT).show();
         }
-        else{
-            Toast.makeText(getBaseContext(), "DISTANCE: " + measureDist, Toast.LENGTH_SHORT).show();
-        }
 
 
         if (mCurrentLocation != null) {
@@ -452,6 +449,16 @@ public class MainActivity extends ActionBarActivity implements ConnectionCallbac
                             return;
                         }
                         step = trip_steps.getJSONObject(step_num);
+
+                        // Determine which way the person has to turn next
+                        Boolean turnRight = step.getString("maneuver").contains("right");
+                        Boolean turnLeft = step.getString("maneuver").contains("left");
+                        // Send appropriate message to bluetooth
+                        if (turnRight){
+                            rightBT();
+                        } else if (turnLeft){
+                            leftBT();
+                        }
                     }
                     // updated TextView with instructions
                     mTV.setMovementMethod(new ScrollingMovementMethod());
