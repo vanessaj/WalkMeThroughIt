@@ -6,6 +6,7 @@ import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
 import android.location.Location;
 import android.os.AsyncTask;
+import android.speech.tts.TextToSpeech;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
@@ -17,6 +18,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -49,6 +51,7 @@ import java.net.URL;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Locale;
 import java.util.UUID;
 
 import ai.wit.sdk.IWitListener;
@@ -56,7 +59,7 @@ import ai.wit.sdk.Wit;
 import ai.wit.sdk.model.WitOutcome;
 
 
-public class MainActivity extends ActionBarActivity implements ConnectionCallbacks, OnConnectionFailedListener, LocationListener,IWitListener {
+public class MainActivity extends ActionBarActivity implements ConnectionCallbacks, OnConnectionFailedListener, LocationListener,IWitListener, TextToSpeech.OnInitListener {
 
     private static final String TAG = "MainActivity";
 
@@ -123,6 +126,8 @@ public class MainActivity extends ActionBarActivity implements ConnectionCallbac
     protected double dest_lat;
     protected double dest_lng;
 
+    private TextToSpeech tts;
+
     // UI Widgets.
    // protected Button mStartUpdatesButton;
     //protected Button mStopUpdatesButton;
@@ -165,7 +170,7 @@ public class MainActivity extends ActionBarActivity implements ConnectionCallbac
 
         //TelephonyManager tManager = (TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE);
         //MY_UUID = (UUID) tManager.getDeviceId();
-
+        tts = new TextToSpeech(this, this);
 
         // Update values using data stored in the Bundle.
         updateValuesFromBundle(savedInstanceState);
@@ -183,7 +188,7 @@ public class MainActivity extends ActionBarActivity implements ConnectionCallbac
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
+        //getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
 
@@ -426,11 +431,14 @@ public class MainActivity extends ActionBarActivity implements ConnectionCallbac
 
         if (mCurrentLocation != null) {
             // set textview for current latitude
-            TextView mLat = (TextView) findViewById(R.id.tv_lat);
+          /*  TextView mLat = (TextView) findViewById(R.id.tv_lat);
             mLat.setText("Lat: "+ String.valueOf(mCurrentLocation.getLatitude()));
             // set textview for current longitude
             TextView mLong = (TextView) findViewById(R.id.tv_long);
             mLong.setText("Lng: "+String.valueOf(mCurrentLocation.getLongitude()));
+            */
+            TextView mCoor = (TextView) findViewById(R.id.tv_coor);
+            mCoor.setText("Lat: " + String.valueOf(mCurrentLocation.getLatitude()) + "  Lng: " + String.valueOf(mCurrentLocation.getLongitude()));
 
             TextView mTime = (TextView) findViewById(R.id.tv_time);
             mTime.setText("Last Update Time: "+mLastUpdateTime);
@@ -581,7 +589,13 @@ public class MainActivity extends ActionBarActivity implements ConnectionCallbac
         String url = "https://maps.googleapis.com/maps/api/directions/json?origin="+mLat+","+mLon+"&destination="+destination.replace(" ", "+")+"&mode=walking&key=AIzaSyDe83w8OsRRYlZ5JwmGzDFGfWSQIdD00GQ";
         new RequestTask().execute(url);
         startUpdatesButtonHandler();
-        ((TextView) findViewById(R.id.txtText)).setText("Heading to "+destination+"!");
+        String destinationMsg = "Heading to "+ destination+"!";
+        ((TextView) findViewById(R.id.txtText)).setText(destinationMsg);
+        speakOut(destinationMsg);
+    }
+
+    private void speakOut(String mDestination) {
+        tts.speak(mDestination, TextToSpeech.QUEUE_FLUSH, null);
     }
 
     @Override
@@ -602,6 +616,25 @@ public class MainActivity extends ActionBarActivity implements ConnectionCallbac
     @Override
     public String witGenerateMessageId() {
         return null;
+    }
+
+    @Override
+    public void onInit(int status) {
+        if (status == TextToSpeech.SUCCESS) {
+
+            int result = tts.setLanguage(Locale.CANADA);
+
+            if (result == TextToSpeech.LANG_MISSING_DATA
+                    || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                Log.e("TTS", "This Language is not supported");
+            } else {
+                //btnSpeak.setEnabled(true);
+                //speakOut();
+            }
+
+        } else {
+            Log.e("TTS", "Initilization Failed!");
+        }
     }
 
     public static class PlaceholderFragment extends Fragment {
