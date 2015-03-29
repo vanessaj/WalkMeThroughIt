@@ -7,26 +7,12 @@
     android:background="@color/background"
     android:paddingBottom="@dimen/activity_vertical_margin" tools:context=".MainActivity">
 
-
-   <!-- <Button
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="TEST BUTTON !!!"
-        android:onClick="testSend"/>-->
     <LinearLayout
     android:layout_height="0px"
     android:layout_weight="1"
     android:layout_width="match_parent"
-    android:orientation="vertical">
-
-        <fragment
-            android:layout_width="60dp"
-            android:layout_height="60dp"
-            android:name="com.vanessamacisaac.walkmethroughit.MainActivity$PlaceholderFragment"
-            android:layout_centerHorizontal="true"
-            android:layout_gravity="center_horizontal"
-            tools:layout="@layout/wit_button"
-            />
+    android:orientation="vertical"
+        android:weightSum="1">
 
         <TextView
             android:id="@+id/txtText"
@@ -35,59 +21,37 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="5dp"
-            android:background="#e4e4e4"
-            android:text="The spoken text will show up here"
+            android:layout_centerHorizontal="true"
+            android:layout_gravity="center_horizontal"
+            android:text=""
             />
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="5dp"
-            android:text="The semantic results will show up here"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:id="@+id/jsonView"
-            android:background="#e4e4e4"
-            android:maxLines = "100"
-            android:scrollbars = "vertical"
-            />
     </LinearLayout>
 
     <LinearLayout
         android:layout_height="0px"
         android:layout_weight="1"
         android:layout_width="match_parent"
-        android:orientation="vertical">
-        <Button
-            android:id="@+id/start"
-            android:text="START"
+        android:orientation="vertical"
+        android:weightSum="1">
+
+        <TextView
+            android:id="@+id/directions"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="15dp"
-            android:background="@drawable/rectangle"
-            android:onClick="startUpdatesButtonHandler"
-            />
+            android:maxLines="24"
+            android:scrollbars="vertical"
+            android:layout_weight="0.32"
+            android:textSize="30sp" />
 
-        <Button
-            android:id="@+id/stop"
-            android:text="STOP"
-            android:layout_width="match_parent"
+        <fragment
+            android:layout_width="138dp"
             android:layout_height="wrap_content"
-            android:background="@drawable/rectangle"
-            android:onClick="stopUpdatesButtonHandler"/>
-
-        <!--    <Button
-                android:text="Send"
-                android:id="@+id/sendRight"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:onClick="rightBT"/>
-
-            <Button
-                android:text="Send"
-                android:id="@+id/sendLeft"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:onClick="leftBT"/>-->
+            android:name="com.vanessamacisaac.walkmethroughit.MainActivity$PlaceholderFragment"
+            android:layout_centerHorizontal="true"
+            android:layout_gravity="center_horizontal"
+            tools:layout="@layout/wit_button"
+            android:layout_weight="0.44" />
 
         <TextView
             android:id="@+id/tv_lat"
@@ -103,18 +67,6 @@
             android:id="@+id/tv_time"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
-
-        <TextView
-            android:id="@+id/directions"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:maxLines="24"
-            android:scrollbars="vertical"/>
     </LinearLayout>
-
-
-
-
-
 
 </LinearLayout>

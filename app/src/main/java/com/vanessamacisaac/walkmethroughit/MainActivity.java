@@ -124,8 +124,8 @@ public class MainActivity extends ActionBarActivity implements ConnectionCallbac
     protected double dest_lng;
 
     // UI Widgets.
-    protected Button mStartUpdatesButton;
-    protected Button mStopUpdatesButton;
+   // protected Button mStartUpdatesButton;
+    //protected Button mStopUpdatesButton;
 
     protected synchronized void buildGoogleApiClient() {
         mGoogleApiClient = new GoogleApiClient.Builder(this)
@@ -160,8 +160,8 @@ public class MainActivity extends ActionBarActivity implements ConnectionCallbac
         mRequestingLocationUpdates = false;
         mLastUpdateTime = "";
 
-        mStartUpdatesButton = (Button) findViewById(R.id.start);
-        mStopUpdatesButton = (Button) findViewById(R.id.stop);
+        //mStartUpdatesButton = (Button) findViewById(R.id.start);
+        //mStopUpdatesButton = (Button) findViewById(R.id.stop);
 
         //TelephonyManager tManager = (TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE);
         //MY_UUID = (UUID) tManager.getDeviceId();
@@ -367,7 +367,7 @@ public class MainActivity extends ActionBarActivity implements ConnectionCallbac
      * Handles the Start Updates button and requests start of location updates. Does nothing if
      * updates have already been requested.
      */
-    public void startUpdatesButtonHandler(View view) {
+    public void startUpdatesButtonHandler() {
         if (!mRequestingLocationUpdates) {
             mRequestingLocationUpdates = true;
             setButtonsEnabledState();
@@ -379,7 +379,7 @@ public class MainActivity extends ActionBarActivity implements ConnectionCallbac
      * Handles the Stop Updates button, and requests removal of location updates. Does nothing if
      * updates were not previously requested.
      */
-    public void stopUpdatesButtonHandler(View view) {
+    public void stopUpdatesButtonHandler() {
         if (mRequestingLocationUpdates) {
             mRequestingLocationUpdates = false;
             setButtonsEnabledState();
@@ -398,17 +398,17 @@ public class MainActivity extends ActionBarActivity implements ConnectionCallbac
         if (mRequestingLocationUpdates) {
             //mStartUpdatesButton.setEnabled(false);
             //mStopUpdatesButton.setEnabled(true);
-            Button start = (Button) findViewById(R.id.start);
-            start.setEnabled(false);
-            Button stop = (Button) findViewById(R.id.stop);
-            stop.setEnabled(true);
+            //Button start = (Button) findViewById(R.id.start);
+            //start.setEnabled(false);
+            //Button stop = (Button) findViewById(R.id.stop);
+            //stop.setEnabled(true);
         } else {
             //mStartUpdatesButton.setEnabled(true);
             //mStopUpdatesButton.setEnabled(false);
-            Button start = (Button) findViewById(R.id.start);
-            start.setEnabled(true);
-            Button stop = (Button) findViewById(R.id.stop);
-            stop.setEnabled(false);
+            //Button start = (Button) findViewById(R.id.start);
+            //start.setEnabled(true);
+            //Button stop = (Button) findViewById(R.id.stop);
+            //stop.setEnabled(false);
         }
     }
 
@@ -561,18 +561,14 @@ public class MainActivity extends ActionBarActivity implements ConnectionCallbac
 
     @Override
     public void witDidGraspIntent(ArrayList<WitOutcome> witOutcomes, String messageId, Error error) {
-        TextView jsonView = (TextView) findViewById(R.id.jsonView);
-        jsonView.setMovementMethod(new ScrollingMovementMethod());
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
         if (error != null) {
-            jsonView.setText(error.getLocalizedMessage());
             return ;
         }
         String jsonOutput = gson.toJson(witOutcomes);
-        //jsonView.setText(jsonOutput);
-
         String destination = "";
+
         try {
             JSONArray wit_output = new JSONArray(jsonOutput);
             JSONObject whole = wit_output.getJSONObject(0);
@@ -584,8 +580,8 @@ public class MainActivity extends ActionBarActivity implements ConnectionCallbac
         double mLon = mCurrentLocation.getLongitude();
         String url = "https://maps.googleapis.com/maps/api/directions/json?origin="+mLat+","+mLon+"&destination="+destination.replace(" ", "+")+"&mode=walking&key=AIzaSyDe83w8OsRRYlZ5JwmGzDFGfWSQIdD00GQ";
         new RequestTask().execute(url);
-
-        ((TextView) findViewById(R.id.txtText)).setText(destination);
+        startUpdatesButtonHandler();
+        ((TextView) findViewById(R.id.txtText)).setText("Heading to "+destination+"!");
     }
 
     @Override
@@ -726,7 +722,7 @@ public class MainActivity extends ActionBarActivity implements ConnectionCallbac
         if(!btSocket.isConnected()) {
             try {
                 btSocket.connect();
-                Thread.sleep(3000);
+                Thread.sleep(1000);
                 Log.e(TAG, "...Connection established and data link opened...");
             } catch (IOException e) {
                 try {
