@@ -7,12 +7,14 @@
 
 
     <ImageView
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
+        android:layout_width="fill_parent"
+        android:layout_height="110dp"
+        android:scaleType="fitXY"
         android:src="@drawable/mtlogo"
         android:paddingLeft="0dp"
         android:paddingRight="0dp"
+        android:paddingBottom="15dp"
+        android:contentDescription="@string/logoDescripton"
     />
 
     <LinearLayout
@@ -25,13 +27,13 @@
         <TextView
             android:id="@+id/txtText"
             android:textAppearance="?android:attr/textAppearanceLarge"
-            android:textStyle="italic"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="5dp"
             android:layout_centerHorizontal="true"
             android:layout_gravity="center_horizontal"
             android:text=""
+            android:paddingBottom="15dp"
             />
 
         <fragment
@@ -40,27 +42,40 @@
             android:name="com.vanessamacisaac.walkmethroughit.MainActivity$PlaceholderFragment"
             android:layout_centerHorizontal="true"
             android:layout_gravity="center_horizontal"
+            android:paddingBottom="15dp"
             tools:layout="@layout/wit_button" />
 
 
             <TextView
+                android:textAlignment="center"
                 android:id="@+id/directions"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
+                android:layout_gravity="center_horizontal"
                 android:layout_height="wrap_content"
-                android:maxLines="24"
+                android:maxLines="20"
                 android:scrollbars="vertical"
+                android:paddingBottom="15dp"
                 android:textSize="30sp" />
+    </LinearLayout>
+    <LinearLayout
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:orientation="vertical"
+        android:layout_gravity="bottom|center_horizontal">
+        <TextView
+            android:textAlignment="center"
+            android:id="@+id/tv_coor"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
 
-            <TextView
-                android:id="@+id/tv_coor"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-
-            <TextView
-                android:id="@+id/tv_time"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+        <TextView
+            android:textAlignment="center"
+            android:id="@+id/tv_time"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
         </LinearLayout>
+
+
 
 
 
